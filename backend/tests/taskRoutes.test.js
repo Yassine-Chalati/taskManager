@@ -142,6 +142,6 @@ describe('Task API', () => {
             .set('Authorization', `Bearer ${jwtToken}`)
             .send(invalidTask);
         expect(res.status).toBe(400);  // Bad request due to validation failure
-        expect(res.body.errors).toHaveLength(3);  // Assuming there are 3 validation errors for missing fields
+        expect(res.body.errors).toHaveLength(4);  // Assuming there are 4 validation errors for missing fields
     });
 });
