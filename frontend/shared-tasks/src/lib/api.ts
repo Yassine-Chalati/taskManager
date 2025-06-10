@@ -28,7 +28,7 @@ class API {
                 });
 
                 const tasks = response.data;  // Directly use response.data as an array of tasks
-                if (Array.isArray(tasks) && tasks.length > 0) {
+                if (Array.isArray(tasks) && tasks.length >= 0) {
                     return { tasks };
                 } else {
                     throw new Error('Failed to fetch tasks or no tasks available');
