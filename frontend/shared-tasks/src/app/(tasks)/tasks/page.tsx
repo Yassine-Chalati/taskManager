@@ -191,7 +191,7 @@ const TaskList = () => {
                     {/* Create Task Button */}
                     <motion.button
                         onClick={navigateToCreateTask} // Navigate to the create task page
-                        className="relative bg-green-500 text-white p-4 rounded-full shadow-lg z-50 flex items-center justify-center"
+                        className="relative bg-green-500 text-white p-4 rounded-full shadow-lg z-50 flex items-center justify-center font-bold"
                         whileHover={{ scale: 1.1 }}
                         transition={{ duration: 0.3 }}
                     >
@@ -260,13 +260,52 @@ const TaskList = () => {
                     {/* Reset Filters Button */}
                     <motion.button
                         onClick={resetFilters}
-                        className="bg-red-500 text-white p-2 rounded-md flex items-center justify-center"
+                        className="bg-red-500 text-white p-2 rounded-md flex items-center justify-center font-bold"
                         whileHover={{ scale: 1.1 }}
                         transition={{ duration: 0.3 }}
                     >
                         <FiRefreshCw className="mr-2" />
                         Reset Filters
                     </motion.button>
+                </div>
+
+                {/* Header Task List */}
+
+                <div>
+                    {paginatedTasks && paginatedTasks.length > 0 ? (
+                            <motion.div
+                                className="border-2 dark:border-gray-500 bg-withe-200 dark:bg-gray-800 p-4 rounded-lg shadow-2xl cursor-pointer relative mb-4"
+                            >
+
+
+                                {/* Task Information in a single line */}
+                                <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-300">
+                                    {/* Due Date Icon */}
+                                    <div className="flex items-center mr-4 font-bold text-lg">
+                                        {"Due Date"}
+                                    </div>
+
+                                    {/* Task Status Icon */}
+                                    <div className="flex items-center mr-4 font-bold text-lg">
+                                        {"Status"}
+                                    </div>
+
+                                    {/* Task Priority Icon */}
+                                    <div className="flex items-center font-bold text-lg">
+                                        {"Priority"}
+                                    </div>
+
+                                    {/* Task Buttons */}
+                                    <div className="flex space-x-4 m-0 z-10 relative font-bold text-lg">
+                                        {"Actions Buttons"}
+                                    </div>
+                                </div>
+
+                                
+                            </motion.div>
+                    ) : (
+                        <div className="text-center text-gray-500 dark:text-gray-400 py-8">No tasks found.</div>
+                    )}
                 </div>
 
                 {/* Task List */}
@@ -335,7 +374,7 @@ const TaskList = () => {
                                     <div className="flex space-x-4 m-0 z-10 relative">
                                         <motion.button
                                             onClick={(e) => { e.stopPropagation(); editTask(Number(task.id)); }}
-                                            className="bg-yellow-500 text-white p-2 rounded-md"
+                                            className="bg-yellow-500 text-white p-2 rounded-md font-bold"
                                             whileHover={{ scale: 1.1 }}
                                       ginatedTassition={{ duration: 0.3 }}
                                         >
@@ -345,7 +384,7 @@ const TaskList = () => {
                                         <motion.button
                                             onClick={(e) => { e.stopPropagation(); deleteTask(Number(task.id)); }}
                                             disabled={deletingTaskId === task.id}
-                                            className="bg-red-500 text-white p-2 rounded-md flex items-center justify-center w-20"
+                                            className="bg-red-500 text-white p-2 rounded-md flex items-center justify-center w-20 font-bold"
                                             whileHover={{ scale: 1.1 }}
                                             transition={{ duration: 0.3 }}
                                         >
