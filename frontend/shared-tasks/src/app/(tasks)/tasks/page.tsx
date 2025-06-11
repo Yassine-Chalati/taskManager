@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -7,6 +7,9 @@ import taskService from '../../../services/taskService'; // Import your task ser
 import Cookies from 'js-cookie';
 import { Task } from '../../../types/task';  // Import your Task type
 import { useRouter } from 'next/navigation';
+import { FiSearch } from 'react-icons/fi';  // Import the search icon from react-icons
+import { FiPlus, FiRefreshCw } from 'react-icons/fi';  // Import other necessary icons for the buttons
+import { FaCheckCircle, FaRegHourglass, FaRegClock } from 'react-icons/fa';  // Icons for task status, priority, due date
 
 // Fetcher function to use with SWR
 const fetchTasks = async () => {
@@ -19,7 +22,6 @@ const fetchTasks = async () => {
     return response;  // Return tasks data
 };
 
-
 const TaskList = () => {
     const { data: tasks, error, isLoading } = useSWR('/api/tasks', fetchTasks);  // Use SWR to fetch tasks from TaskService
     const router = useRouter();
@@ -30,10 +32,21 @@ const TaskList = () => {
     const [createdDateFilter, setCreatedDateFilter] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('priority');
+    const [isDarkMode, setIsDarkMode] = useState(false);  // Track Dark Mode
 
     // Handle task details visibility
     const toggleTaskDetails = (taskId: number) => {
         setExpandedTask(expandedTask === taskId ? null : taskId); // Toggle task details
+    };
+
+    // Handle dark mode toggle
+    const toggleDarkMode = () => {
+        setIsDarkMode(!isDarkMode);
+        if (isDarkMode) {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
     };
 
     const editTask = (taskId: number) => {
@@ -45,20 +58,19 @@ const TaskList = () => {
 
     // Add delete logic here
     const deleteTask = async (taskId: number) => {
-
-    setDeletingTaskId(taskId);
-    try {
-        await taskService.deleteTask(taskId);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
-    } catch (error) {
-        console.error("Delete failed", error);
-        alert("Failed to delete task.");
-    } finally {
-        setDeletingTaskId(null);
-        location.reload(); // or useSWR mutate if you prefer
-    }
-};
+        setDeletingTaskId(taskId);
+        try {
+            await taskService.deleteTask(taskId);
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 3000);
+        } catch (error) {
+            console.error("Delete failed", error);
+            alert("Failed to delete task.");
+        } finally {
+            setDeletingTaskId(null);
+            location.reload(); // or useSWR mutate if you prefer
+        }
+    };
 
     // Reset all filters
     const resetFilters = () => {
@@ -113,7 +125,6 @@ const TaskList = () => {
         }
     }, [error, router]);
 
-    
     if (error) return <div>Error loading tasks {error.message}</div>;
 
     // Loading spinner when data is being fetched
@@ -146,42 +157,47 @@ const TaskList = () => {
                 )}
             </AnimatePresence>
 
-
-            {/* Create Task Button */}
-            <motion.button
-                onClick={navigateToCreateTask} // Navigate to the create task page
-                className="absolute top-4 right-10 bg-blue-500 text-white p-4 rounded-full shadow-lg"
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-            >
-                Create Task
-            </motion.button>
-
-            {/* Filters and Task List */}
-            <div className="max-w-4xl w-full p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md z-0">
+            
+            <div className="relative w-[95%] max-w-full p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md z-0">
+                {/* Filters and Task List */}
                 <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-6">Tasks</h1>
 
-                {/* Search Input */}
-                <div className="mb-6">
-                    <input
-                        type="text"
-                        placeholder="Search tasks by title..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md w-full"
-                    />
+                {/* Search bar and Create Button */}
+                <div className="flex justify-between mb-6">
+                    {/* Search bar */}
+                    <div className="relative flex items-center w-[25%]">
+                        <FiSearch className="text-gray-600 dark:text-gray-300 absolute left-2" />
+                        <input
+                            type="text"
+                            placeholder="Search tasks by title..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 pl-8 rounded-md w-full"  // Add padding-left to give space for the icon
+                        />
+                    </div>
+
+                    {/* Create Task Button */}
+                    <motion.button
+                        onClick={navigateToCreateTask} // Navigate to the create task page
+                        className="relative bg-green-500 text-white p-4 rounded-full shadow-lg z-50 flex items-center justify-center"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <FiPlus className="mr-2" />
+                        Create Task
+                    </motion.button>
                 </div>
 
                 {/* Filter Section */}
                 <div className="mb-6 flex flex-col md:flex-row justify-between items-center space-x-4">
                     {/* Status Filter */}
-                    <div className="mb-4 md:mb-0">
+                    <div className="mb-4 md:mb-0 w-[15%]">
                         <label htmlFor="status" className="block text-sm font-medium text-gray-800 dark:text-white">Filter by Status</label>
                         <select
                             id="status"
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md"
+                            className="w-[100%] bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md"
                         >
                             <option value="All">All Status</option>
                             <option value="Completed">Completed</option>
@@ -191,140 +207,193 @@ const TaskList = () => {
                     </div>
 
                     {/* Due Date Filter */}
-                    <div className="mb-4 md:mb-0">
+                    <div className="mb-4 md:mb-0 w-[15%]">
                         <label htmlFor="dueDate" className="block text-sm font-medium text-gray-800 dark:text-white">Filter by Due Date</label>
                         <input
                             type="date"
                             id="dueDate"
                             value={dueDateFilter}
                             onChange={(e) => setDueDateFilter(e.target.value)}
-                            className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md"
+                            className="w-[100%] bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md"
                         />
                     </div>
 
                     {/* Created Date Filter */}
-                    <div className="mb-4 md:mb-0">
+                    <div className="w-[15%] mb-4 md:mb-0">
                         <label htmlFor="createdDate" className="block text-sm font-medium text-gray-800 dark:text-white">Filter by Created Date</label>
                         <input
                             type="date"
                             id="createdDate"
                             value={createdDateFilter}
                             onChange={(e) => setCreatedDateFilter(e.target.value)}
-                            className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md"
+                            className="w-[100%] bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md"
                         />
                     </div>
 
                     {/* Sorting Options */}
-                    <div>
+                    <div className="w-[15%] mb-4 md:mb-0">
                         <label htmlFor="sortBy" className="block text-sm font-medium text-gray-800 dark:text-white">Sort by</label>
                         <select
                             id="sortBy"
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md"
+                            className="w-[100%] bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 p-2 rounded-md"
                         >
                             <option value="priority">Priority</option>
                             <option value="dueDate">Due Date</option>
                             <option value="createdDate">Created Date</option>
                         </select>
                     </div>
+
+                    {/* Reset Filters Button */}
+                    <motion.button
+                        onClick={resetFilters}
+                        className="bg-red-500 text-white p-2 rounded-md flex items-center justify-center"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <FiRefreshCw className="mr-2" />
+                        Reset Filters
+                    </motion.button>
                 </div>
 
-                {/* Reset Filters Button */}
-                <button
-                    onClick={resetFilters}
-                    className="mb-4 bg-red-500 text-white p-2 rounded-md"
-                >
-                    Reset Filters
-                </button>
-
                 {/* Task List */}
-                <motion.div
-                    className="space-y-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    {(sortedTasks ?? []).map((task) => (
-                        <motion.div
-                            key={task.id}
-                            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm cursor-pointer relative"
-                            onClick={() => toggleTaskDetails(Number(task.id))}
-                            whileHover={{ scale: 1.05 }}
-                            transition={{ duration: 0.3 }}
-                            initial={{ opacity: 0, y: 20 }}  // Start with a slight offset for smoother entry
-                            animate={{ opacity: 1, y: 0 }}  // Animate to full opacity and default position
-                            exit={{ opacity: 0, y: 20 }}  // Exit with a slight offset down
-                            transition={{ duration: 0.5 }}  // Smooth motion for appearance
-                        >
-                            <div className="flex justify-between">
-                                <h2 className="text-xl font-semibold text-gray-800 dark:text-white">{task.title}</h2>
-                                <span className="text-sm text-gray-600 dark:text-gray-300">{new Date(task.due_date).toLocaleDateString()}</span>
-                            </div>
-
-                            {/* Task Status */}
-                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                Status: <span className={task.status === 'Completed' ? 'text-green-500' : task.status === 'In-Progress' ? 'text-yellow-500' : 'text-red-500'}>{task.status}</span>
-                            </div>
-
-                            {/* Task Priority */}
-                            <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                Priority: <span className={task.priority === 'high' ? 'text-red-500' : task.priority === 'medium' ? 'text-yellow-500' : 'text-green-500'}>{task.priority}</span>
-                            </div>
-
-                            {/* Expandable Details */}
+                <div>
+                    {sortedTasks && sortedTasks.length > 0 ? (
+                        sortedTasks.map((task: Task) => (
                             <motion.div
-                                className="md:block"
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{
-                                    height: expandedTask === Number(task.id) ? 'auto' : 0,
-                                    opacity: expandedTask === Number(task.id) ? 1 : 0,
-                                }}
-                                transition={{ duration: 0.5 }}
+                                key={task.id}
+                                className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-2xl cursor-pointer relative mb-4"
+                                onClick={() => toggleTaskDetails(Number(task.id))}
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ duration: 0.3 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 20 }}
                             >
-                                {expandedTask === Number(task.id) && (
-                                    <motion.div
-                                        className="mt-4 text-gray-600 dark:text-gray-300"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <p><strong>Description:</strong> {task.description}</p>
-                                        <p><strong>Created At:</strong> {new Date(task.createdAt).toLocaleString()}</p>
-                                        <p><strong>Updated At:</strong> {new Date(task.updatedAt).toLocaleString()}</p>
-                                    </motion.div>
-                                )}
-                            </motion.div>
+                                <div className="flex justify-between">
+                                    <h2 className="text-xl mb-2 font-semibold text-gray-800 dark:text-white">{task.title}</h2>
+                                </div>
 
-                            {/* Task Buttons */}
-                            <div className="flex space-x-4 mt-4 absolute right-4 bottom-4 z-10">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); editTask(Number(task.id)); }}
-                                    className="bg-yellow-500 text-white p-2 rounded-md"
-                                >
-                                    Edit
-                                </button>
+                                {/* Task Information in a single line */}
+                                <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-gray-300">
+                                    {/* Due Date Icon */}
+                                    <div className="flex items-center mr-4">
+                                        {(() => {
+                                            const dueDate = new Date(task.due_date);
+                                            const today = new Date();
+                                            dueDate.setHours(0, 0, 0, 0);
+                                            today.setHours(0, 0, 0, 0);
+                                            if (dueDate > today) {
+                                                return <FaRegClock className="text-green-500 mr-2" />;
+                                            } else if (dueDate.getTime() === today.getTime()) {
+                                                return <FaRegHourglass className="text-yellow-500 mr-2" />;
+                                            } else {
+                                                return <FaCheckCircle className="text-red-500 mr-2" />;
+                                            }
+                                        })()}
+                                        {new Date(task.due_date).toLocaleDateString()}
+                                    </div>
 
-                                <button
-                                    onClick={(e) => {
-                                        // e.stopPropagation();
-                                        deleteTask(Number(task.id));
+                                    {/* Task Status Icon */}
+                                    <div className="flex items-center mr-4">
+                                        {task.status === 'Completed' ? (
+                                            <FaCheckCircle className="text-green-500 mr-2" />
+                                        ) : task.status === 'In-Progress' ? (
+                                            <FaRegHourglass className="text-yellow-500 mr-2" />
+                                        ) : (
+                                            <FaRegClock className="text-red-500 mr-2" />
+                                        )}
+                                        {task.status}
+                                    </div>
+
+                                    {/* Task Priority Icon */}
+                                    <div className="flex items-center">
+                                        {task.priority === 'high' ? (
+                                            <FaRegHourglass className="text-red-500 mr-2" />
+                                        ) : task.priority === 'medium' ? (
+                                            <FaRegHourglass className="text-yellow-500 mr-2" />
+                                        ) : (
+                                            <FaRegHourglass className="text-green-500 mr-2" />
+                                        )}
+                                        {task.priority}
+                                    </div>
+
+                                    {/* Task Buttons */}
+                                    <div className="flex space-x-4 m-0 z-10 relative">
+                                        <motion.button
+                                            onClick={(e) => { e.stopPropagation(); editTask(Number(task.id)); }}
+                                            className="bg-yellow-500 text-white p-2 rounded-md"
+                                            whileHover={{ scale: 1.1 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            Edit
+                                        </motion.button>
+
+                                        <motion.button
+                                            onClick={(e) => { e.stopPropagation(); deleteTask(Number(task.id)); }}
+                                            disabled={deletingTaskId === task.id}
+                                            className="bg-red-500 text-white p-2 rounded-md flex items-center justify-center w-20"
+                                            whileHover={{ scale: 1.1 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            {deletingTaskId === task.id ? (
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                                "Delete"
+                                            )}
+                                        </motion.button>
+                                    </div>
+                                </div>
+
+                                {/* Expandable Details */}
+                                <motion.div
+                                    className="md:block"
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{
+                                        height: expandedTask === Number(task.id) ? 'auto' : 0,
+                                        opacity: expandedTask === Number(task.id) ? 1 : 0,
                                     }}
-                                    disabled={deletingTaskId === task.id}
-                                    className="bg-red-500 text-white p-2 rounded-md flex items-center justify-center w-20"
+                                    transition={{ duration: 0.5 }}
                                 >
-                                    {deletingTaskId === task.id ? (
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    ) : (
-                                        "Delete"
+                                    {expandedTask === Number(task.id) && (
+                                        <><motion.div
+                                            className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-300"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <p><strong>Description:</strong> {task.description}</p>
+                                        </motion.div><motion.div
+                                            className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-300"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                                <p><strong>Created At:</strong> {new Date(task.createdAt).toLocaleString()}</p>
+                                            </motion.div><motion.div
+                                                className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-300"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <p><strong>Updated At:</strong> {new Date(task.updatedAt).toLocaleString()}</p>
+                                            </motion.div></>
+
+
+
+                                        
                                     )}
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
+                                </motion.div>
+                            </motion.div>
+                        ))
+                    ) : (
+                        <div className="text-center text-gray-500 dark:text-gray-400 py-8">No tasks found.</div>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -6,6 +6,9 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 
+// Import the Heroicons for dark/light mode toggle
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -67,9 +70,14 @@ export default function RootLayout({
         {/* Dark Mode Toggle Button (Floating) */}
         <button
           onClick={toggleDarkMode}
-          className="fixed bottom-10 right-10 p-4 rounded-full bg-blue-500 text-white shadow-lg transition-all duration-300 hover:bg-blue-700"
+          className={`fixed bottom-10 right-10 p-4 rounded-full shadow-lg transition-all duration-300 
+            ${isDarkMode ? 'bg-white text-black' : 'bg-black text-white'} hover:scale-105`}
         >
-          {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+          {isDarkMode ? (
+            <SunIcon className="h-6 w-6" />
+          ) : (
+            <MoonIcon className="h-6 w-6" />
+          )}
         </button>
       </body>
     </html>
