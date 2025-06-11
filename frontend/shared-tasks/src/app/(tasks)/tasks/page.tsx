@@ -34,6 +34,9 @@ const TaskList = () => {
     const [sortBy, setSortBy] = useState('priority');
     const [isDarkMode, setIsDarkMode] = useState(false);  // Track Dark Mode
 
+    const [currentPage, setCurrentPage] = useState(1);  // Track current page
+    const pageSize = 3;  // Set number of tasks per page
+
     // Handle task details visibility
     const toggleTaskDetails = (taskId: number) => {
         setExpandedTask(expandedTask === taskId ? null : taskId); // Toggle task details
@@ -118,6 +121,9 @@ const TaskList = () => {
         return 0;
     });
 
+    // Get tasks for the current page
+    const paginatedTasks = sortedTasks?.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
     // Handle loading and error states
     useEffect(() => {
         if (error?.status === 401) {
@@ -141,6 +147,13 @@ const TaskList = () => {
         router.replace('/tasks/create'); // This will route to the create task page
     };
 
+    // Pagination logic
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
+
+    const totalPages = Math.ceil(sortedTasks?.length / pageSize);
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4 relative">
             <AnimatePresence>
@@ -157,8 +170,7 @@ const TaskList = () => {
                 )}
             </AnimatePresence>
 
-            
-            <div className="relative w-[95%] max-w-full p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md z-0">
+            <div className="relative w-[90%] h-[80%] max-w-full p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md z-0">
                 {/* Filters and Task List */}
                 <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-6">Tasks</h1>
 
@@ -259,8 +271,8 @@ const TaskList = () => {
 
                 {/* Task List */}
                 <div>
-                    {sortedTasks && sortedTasks.length > 0 ? (
-                        sortedTasks.map((task: Task) => (
+                    {paginatedTasks && paginatedTasks.length > 0 ? (
+                        paginatedTasks.map((task: Task) => (
                             <motion.div
                                 key={task.id}
                                 className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-2xl cursor-pointer relative mb-4"
@@ -325,7 +337,7 @@ const TaskList = () => {
                                             onClick={(e) => { e.stopPropagation(); editTask(Number(task.id)); }}
                                             className="bg-yellow-500 text-white p-2 rounded-md"
                                             whileHover={{ scale: 1.1 }}
-                                            transition={{ duration: 0.3 }}
+                                      ginatedTassition={{ duration: 0.3 }}
                                         >
                                             Edit
                                         </motion.button>
@@ -357,23 +369,26 @@ const TaskList = () => {
                                     transition={{ duration: 0.5 }}
                                 >
                                     {expandedTask === Number(task.id) && (
-                                        <><motion.div
-                                            className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-300"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <p><strong>Description:</strong> {task.description}</p>
-                                        </motion.div><motion.div
-                                            className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-300"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
+                                        <>
+                                            <motion.div
+                                                className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-300"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <p><strong>Description:</strong> {task.description}</p>
+                                            </motion.div>
+                                            <motion.div
+                                                className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-300"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
                                                 <p><strong>Created At:</strong> {new Date(task.createdAt).toLocaleString()}</p>
-                                            </motion.div><motion.div
+                                            </motion.div>
+                                            <motion.div
                                                 className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-300"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
@@ -381,11 +396,8 @@ const TaskList = () => {
                                                 transition={{ duration: 0.3 }}
                                             >
                                                 <p><strong>Updated At:</strong> {new Date(task.updatedAt).toLocaleString()}</p>
-                                            </motion.div></>
-
-
-
-                                        
+                                            </motion.div>
+                                        </>
                                     )}
                                 </motion.div>
                             </motion.div>
@@ -393,6 +405,25 @@ const TaskList = () => {
                     ) : (
                         <div className="text-center text-gray-500 dark:text-gray-400 py-8">No tasks found.</div>
                     )}
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex justify-center mt-6">
+                    <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 bg-gray-500 text-white rounded-md mr-2"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-gray-600 dark:text-gray-300">{`Page ${currentPage} of ${totalPages}`}</span>
+                    <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 bg-gray-500 text-white rounded-md ml-2"
+                    >
+                        Next
+                    </button>
                 </div>
             </div>
         </div>
